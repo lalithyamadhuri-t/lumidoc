@@ -78,7 +78,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-6">
+    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center justify-center p-6">
+
       <div className="bg-white w-full max-w-xl rounded-3xl shadow-xl p-8">
 
         <h1 className="text-4xl font-bold text-center text-blue-600">
@@ -91,6 +92,7 @@ export default function Home() {
 
 
         {/* Upload */}
+
         <div className="mt-8 border-2 border-dashed border-blue-300 rounded-2xl p-8 text-center">
 
           <div className="text-5xl">📄</div>
@@ -122,6 +124,7 @@ export default function Home() {
 
           {file && (
             <div className="mt-5 text-sm text-gray-800 bg-gray-50 rounded-xl p-4">
+
               <p className="font-semibold text-gray-900">
                 {file.name}
               </p>
@@ -129,6 +132,7 @@ export default function Home() {
               <p className="mt-1 font-medium">
                 Original size: {formatSize(file.size)}
               </p>
+
             </div>
           )}
 
@@ -136,14 +140,17 @@ export default function Home() {
 
 
         {/* Slider */}
+
         {file && (
           <>
 
             <div className="mt-8">
 
               <div className="flex justify-between text-sm text-gray-700 font-semibold">
+
                 <span>Low</span>
                 <span>High</span>
+
               </div>
 
 
@@ -189,6 +196,7 @@ export default function Home() {
 
 
         {/* Result */}
+
         {result && (
 
           <div className="mt-8 bg-blue-100 border border-blue-300 rounded-2xl p-6">
@@ -230,6 +238,40 @@ export default function Home() {
         )}
 
       </div>
+
+
+      {/* Footer for AdSense trust pages */}
+
+      <footer className="mt-8 text-center text-sm text-gray-600">
+
+        <div className="flex justify-center gap-4 flex-wrap">
+
+          <a href="/about" className="hover:text-blue-600">
+            About
+          </a>
+
+          <a href="/privacy" className="hover:text-blue-600">
+            Privacy Policy
+          </a>
+
+          <a href="/terms" className="hover:text-blue-600">
+            Terms
+          </a>
+
+          <a href="/contact" className="hover:text-blue-600">
+            Contact
+          </a>
+
+        </div>
+
+
+        <p className="mt-2">
+          © 2026 Lumidoc. All rights reserved.
+        </p>
+
+      </footer>
+
+
     </main>
   );
 }
