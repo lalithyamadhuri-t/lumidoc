@@ -1,65 +1,235 @@
-import Image from "next/image";
+"use client";
+
+import { useRef, useState } from "react";
 
 export default function Home() {
+  const fileInputRef = useRef(null);
+
+  const [file, setFile] = useState(null);
+  const [compression, setCompression] = useState(60);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const formatSize = (bytes) => {
+    if (!bytes) return "0 KB";
+    if (bytes < 1024 * 1024)
+      return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+  };
+
+  const estimatedSize = file
+    ? file.size * (1 - compression / 100)
+    : 0;
+
+  async function handleCompress() {
+    if (!file) {
+      alert("Please upload a PDF");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const formData = new FormData();
+
+      formData.append("file", file);
+      formData.append("level", compression);
+
+      const response = await fetch("/api/compress", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Compression failed");
+      }
+
+      const blob = await response.blob();
+
+      setResult({
+        blob,
+        original: file.size,
+        compressed: blob.size,
+        saved: (
+          ((file.size - blob.size) / file.size) * 100
+        ).toFixed(1),
+      });
+    } catch (error) {
+      alert("Compression failed");
+      console.error(error);
+    }
+
+    setLoading(false);
+  }
+
+  function downloadFile() {
+    if (!result) return;
+
+    const url = URL.createObjectURL(result.blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = `compressed-${file.name}`;
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-6">
+      <div className="bg-white w-full max-w-xl rounded-3xl shadow-xl p-8">
+
+        <h1 className="text-4xl font-bold text-center text-blue-600">
+          Lumidoc
+        </h1>
+
+        <p className="text-center text-gray-700 mt-2 font-medium">
+          PDF Compressor
+        </p>
+
+
+        {/* Upload */}
+        <div className="mt-8 border-2 border-dashed border-blue-300 rounded-2xl p-8 text-center">
+
+          <div className="text-5xl">📄</div>
+
+          <h2 className="text-xl font-semibold mt-4">
+            Upload your PDF
+          </h2>
+
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              setFile(e.target.files[0]);
+              setResult(null);
+            }}
+          />
+
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-5 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Choose PDF File
+          </button>
+
+
+          {file && (
+            <div className="mt-5 text-sm text-gray-800 bg-gray-50 rounded-xl p-4">
+              <p className="font-semibold text-gray-900">
+                {file.name}
+              </p>
+
+              <p className="mt-1 font-medium">
+                Original size: {formatSize(file.size)}
+              </p>
+            </div>
+          )}
+
         </div>
-      </main>
-    </div>
+
+
+        {/* Slider */}
+        {file && (
+          <>
+
+            <div className="mt-8">
+
+              <div className="flex justify-between text-sm text-gray-700 font-semibold">
+                <span>Low</span>
+                <span>High</span>
+              </div>
+
+
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={compression}
+                onChange={(e) =>
+                  setCompression(Number(e.target.value))
+                }
+                className="w-full mt-3 accent-blue-600"
+              />
+
+
+              <div className="text-center mt-3">
+
+                <p className="text-blue-700 font-bold text-lg">
+                  {compression}% Compression
+                </p>
+
+
+                <p className="text-gray-700 text-sm font-medium">
+                  Estimated size: {formatSize(estimatedSize)}
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <button
+              onClick={handleCompress}
+              disabled={loading}
+              className="w-full mt-8 bg-blue-600 text-white py-4 rounded-2xl font-semibold hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? "Compressing..." : "Compress PDF"}
+            </button>
+
+          </>
+        )}
+
+
+
+        {/* Result */}
+        {result && (
+
+          <div className="mt-8 bg-blue-100 border border-blue-300 rounded-2xl p-6">
+
+            <h3 className="font-bold text-lg text-blue-700">
+              Compression complete
+            </h3>
+
+
+            <div className="mt-4 space-y-2 text-sm text-gray-800">
+
+              <p>
+                Original: <b>{formatSize(result.original)}</b>
+              </p>
+
+
+              <p>
+                Compressed: <b>{formatSize(result.compressed)}</b>
+              </p>
+
+
+              <p>
+                Saved: <b>{result.saved}%</b>
+              </p>
+
+            </div>
+
+
+            <button
+              onClick={downloadFile}
+              className="w-full mt-5 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700"
+            >
+              Download PDF
+            </button>
+
+
+          </div>
+
+        )}
+
+      </div>
+    </main>
   );
 }
