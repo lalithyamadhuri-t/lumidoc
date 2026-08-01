@@ -12,9 +12,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Lumidoc - Free PDF Compressor",
+  title: "Compress PDF Online Free | Lumidoc PDF Compressor",
   description:
-    "Compress PDF files online quickly and easily with Lumidoc.",
+    "Compress PDF files online for free. Reduce PDF size quickly without losing quality with Lumidoc PDF Compressor.",
 };
 
 export default function RootLayout({ children }) {
